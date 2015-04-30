@@ -1,0 +1,31 @@
+{
+  "name": "generate-maze-by-clustering",
+  "description": "Generate a maze by clustering algorithm",
+  "version": "0.0.0",
+  "author": "kjirou",
+  "bugs": {
+    "url": "https://github.com/kjirou/generate-maze-by-clustering/issues"
+  },
+  "devDependencies": {
+    "fixpack": "2.2.0",
+    "jshint": "2.7.0",
+    "mocha": "2.2.4"
+  },
+  "homepage": "https://github.com/kjirou/generate-maze-by-clustering#readme",
+  "keywords": [
+    "maze"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjirou/generate-maze-by-clustering.git"
+  },
+  "scripts": {
+    "lint": "jshint index.js",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "lodash": "^3.7.0"
+  }
+}

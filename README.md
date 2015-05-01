@@ -7,9 +7,10 @@ Generate a maze by clustering algorithm
 
 
 ## Usage
-### CLI
+### In Command Line
 ```bash
-$generate-maze-by-clustering 5 4
+npm install -g generate-maze-by-clustering
+generate-maze-by-clustering 5 4
 ###########
 #   #   # #
 # ### ### #
@@ -21,7 +22,12 @@ $generate-maze-by-clustering 5 4
 ###########
 ```
 
-### JavaScript API
+### In JavaScript
+```bash
+npm install --save generate-maze-by-clustering
+```
+Or, you can use in browser through the [browserify](https://github.com/substack/node-browserify).
+
 ```
 var generateMaze = require('generate-maze-by-clustering');
 

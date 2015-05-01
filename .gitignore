@@ -37,4 +37,5 @@ pip-log.txt
 testem.*.*.*.json
 
 
+public/dist
 .envrc

@@ -12,42 +12,39 @@ var Wall = function Wall(position, isBreakable) {
   this.isBroken = false;
 };
 
-
 /**
- * @param {Array<number>} [width, height]
+ * Create base cells
+ *
+ * e.g. squareSize = [3, 2]
+ *
+ * #######
+ * # * * #
+ * #*#*#*#
+ * # * * #
+ * #######
+ *
+ * (space) = square
+ * #       = unbreakable wall
+ * *       = breakable wall
  */
-module.exports = function generateMazeByClustering(size) {
+var createCells = function createCells(squareSize) {
 
-  var cellWidth = size[0] * 2 + 1;
-  var cellHeight = size[1] * 2 + 1;
+  var cellWidth = squareSize[0] * 2 + 1;
+  var cellHeight = squareSize[1] * 2 + 1;
 
-  // generate squares
   var squareSerialNumber = -1;
   var squares = [];
   var walls = [];
-  //
-  // Create cells like this:
-  //
-  // #######
-  // # * * #
-  // #*#*#*#
-  // # * * #
-  // #######
-  //
-  // (space) = square
-  // #       = unbreakable wall
-  // *       = breakable wall
-  //
   var cells = _.range(cellHeight).map(function(cellRowIndex) {
     return _.range(cellWidth).map(function(cellColumnIndex) {
-      var square, wall;
+      var cell;
       // square
       if (
         cellRowIndex % 2 === 1 && cellColumnIndex % 2 === 1
       ) {
-        square = new Square(++squareSerialNumber);
-        squares.push(square);
-        return square;
+        cell = new Square(++squareSerialNumber);
+        squares.push(cell);
+        return cell;
       // unbreakable wall
       } else if (
         cellRowIndex === 0 ||
@@ -56,22 +53,59 @@ module.exports = function generateMazeByClustering(size) {
         cellColumnIndex === cellWidth - 1 ||
         cellRowIndex % 2 === 0 && cellColumnIndex % 2 === 0
       ) {
-        wall = new Wall([cellRowIndex, cellColumnIndex], false);
-        walls.push(wall);
-        return wall;
+        cell = new Wall([cellRowIndex, cellColumnIndex], false);
+        walls.push(cell);
+        return cell;
       // breakable wall
       } else if (
         cellRowIndex % 2 === 0 && cellColumnIndex % 2 === 1 ||
         cellRowIndex % 2 === 1 && cellColumnIndex % 2 === 0
       ) {
-        wall = new Wall([cellRowIndex, cellColumnIndex], true);
-        walls.push(wall);
-        return wall;
+        cell = new Wall([cellRowIndex, cellColumnIndex], true);
+        walls.push(cell);
+        return cell;
       } else {
         throw new Error('[' + cellRowIndex + ', ' + cellColumnIndex + '] is unexpected cell');
       }
     });
   });
+
+  return {
+    squares: squares,
+    walls: walls,
+    cells: cells
+  };
+};
+
+
+/**
+ * Generate a maze by "Clustering Method" algorithm
+ *
+ * @param {Array<number>} squareSize  [squareWidth, squareHeight]
+ * @ref "Clustering Method"
+ *      http://apollon.issp.u-tokyo.ac.jp/~watanabe/tips/maze.html
+ *
+ * squareHeight/squareWidth do not mean byte length.
+ * If you set [3, 2] then you will get the following size:
+ *
+ *   #######
+ *   # # # #
+ *   #######
+ *   # # # #
+ *   #######
+ *
+ * In the [1, 1] case:
+ *
+ *   ###
+ *   # #
+ *   ###
+ */
+module.exports = function generateMazeByClustering(squareSize) {
+
+  var results = createCells(squareSize);
+  var squares = results.squares;
+  var walls = results.walls;
+  var cells = results.cells;
 
   // Crush breakable walls randomly
   _.shuffle(walls)
@@ -154,12 +188,11 @@ module.exports = function generateMazeByClustering(size) {
         formatter: 'simple'
       }, options);
 
-      var text = cells.map(function(cellLine) {
+      return cells.map(function(cellLine) {
         return cellLine.map(function(cell) {
           return maze.cellFormatters[options.formatter](cell);
         }).join('');
       }).join('\n');
-      return text;
     }
   };
 

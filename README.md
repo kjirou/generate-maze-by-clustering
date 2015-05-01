@@ -54,6 +54,6 @@ I referred the following site:
 
 http://apollon.issp.u-tokyo.ac.jp/~watanabe/tips/maze.html
 
-The algorithm is named by "Clustering Method"(クラスタリング法) in this site (and many japanize sites).
+The algorithm is named by "Clustering Method"(クラスタリング法) in this site (and many japanise sites).
 
 However, I don't know whether that's the right name.

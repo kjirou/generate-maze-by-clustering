@@ -11,6 +11,31 @@ var Wall = function Wall(position, isBreakable) {
   this.isBreakable = isBreakable;
   this.isBroken = false;
 };
+Wall.prototype.beBrokenIfBreakable = function beBroken(edgedSquares, allSquares) {
+
+  if (edgedSquares.length !== 2) {
+    throw new Error('Unexpected situation');
+  }
+
+  // Is breakable?
+  if (
+    !this.isBreakable ||
+    edgedSquares[0].clusterId === edgedSquares[1].clusterId
+  ) {
+    return;
+  }
+
+  // Update clusterIds of adjacent cells to adjusting smaller
+  var fromClusterId = Math.max(edgedSquares[0].clusterId, edgedSquares[1].clusterId);
+  var toClusterId = Math.min(edgedSquares[0].clusterId, edgedSquares[1].clusterId);
+  allSquares.forEach(function(square) {
+    if (square.clusterId === fromClusterId) {
+      square.clusterId = toClusterId;
+    }
+  });
+
+  this.isBroken = true;
+};
 
 /**
  * Create base cells
@@ -77,14 +102,36 @@ var createCells = function createCells(squareSize) {
   };
 };
 
+/**
+ * @param {Array<number>} centerPosition  [cellRowIndex, cellColumnIndex]
+ */
+var pickAroundSquares = function pickAroundSquares(cells, centerPosition) {
+  var aroundSquares = [];
+  [
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+    [0, -1]
+  ].forEach(function(posDelta) {
+    var cellRowIndex = centerPosition[0] + posDelta[0];
+    var cellColumnIndex = centerPosition[1] + posDelta[1];
+    var cell = cells[cellRowIndex][cellColumnIndex];
+    if (cell instanceof Square) {
+      aroundSquares.push(cell);
+    }
+  });
+  return aroundSquares;
+};
+
 
 /**
  * Generate a maze by "Clustering Method" algorithm
  *
  * @param {Array<number>} squareSize  [squareWidth, squareHeight]
- * @ref "Clustering Method"
+ * @ref "Clustering Method" (クラスタリング法)
  *      http://apollon.issp.u-tokyo.ac.jp/~watanabe/tips/maze.html
  *
+ * ----
  * squareHeight/squareWidth do not mean byte length.
  * If you set [3, 2] then you will get the following size:
  *
@@ -107,43 +154,28 @@ module.exports = function generateMazeByClustering(squareSize) {
   var walls = results.walls;
   var cells = results.cells;
 
-  // Crush breakable walls randomly
+  // Break walls in random order
   _.shuffle(walls)
-    .filter(function(wall) {
-      return wall.isBreakable;
-    })
     .forEach(function(wall) {
-      var aroundSquares = [];
-      [
-        [-1, 0],
-        [0, 1],
-        [1, 0],
-        [0, -1]
-      ].forEach(function(posDelta) {
-        var cellRowIndex = wall.position[0] + posDelta[0];
-        var cellColumnIndex = wall.position[1] + posDelta[1];
-        var cell = cells[cellRowIndex][cellColumnIndex];
-        if (cell instanceof Square) {
-          aroundSquares.push(cell);
-        }
-      });
-
-      if (aroundSquares.length !== 2) {
-        throw new Error('Unexpected situation');
-      }
-
-      if (aroundSquares[0].clusterId === aroundSquares[1].clusterId) {
+      //
+      // Filter to become only "*" points
+      //
+      // #######
+      // # * * #
+      // #*#*#*#
+      // # * * #
+      // #######
+      //
+      if (!wall.isBreakable) {
         return;
       }
+      var edgedSquares = pickAroundSquares(cells, wall.position);
+      if (edgedSquares.length !== 2) {
+        return false;
+      }
 
-      var fromClusterId = Math.max(aroundSquares[0].clusterId, aroundSquares[1].clusterId);
-      var toClusterId = Math.min(aroundSquares[0].clusterId, aroundSquares[1].clusterId);
-      squares.forEach(function(square) {
-        if (square.clusterId === fromClusterId) {
-          square.clusterId = toClusterId;
-        }
-      });
-      wall.isBroken = true;
+      // Apply breaking
+      wall.beBrokenIfBreakable(edgedSquares, squares);
     })
   ;
 

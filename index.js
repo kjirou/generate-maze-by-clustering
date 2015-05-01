@@ -8,6 +8,7 @@ function Square(serialNumber) {
   this.clusterId = serialNumber;
 }
 
+
 function Wall(direction, rowIndex, columnIndex) {
 
   /** "horizontal" or "vertical" */
@@ -22,27 +23,79 @@ function Wall(direction, rowIndex, columnIndex) {
   this.edgedSquares = [null, null];
 
   this.isBroken = false;
-
-  this.isBreakable = function isBreakable() {
-    return (
-      this.edgedSquares[0] &&
-      this.edgedSquares[1] &&
-      this.edgedSquares[0].clusterId !== this.edgedSquares[1].clusterId &&
-      !this.isBroken
-    );
-  };
-
-  this.beBroken = function beBroken() {
-    if (this.edgedSquares[0].clusterId < this.edgedSquares[1].clusterId) {
-      this.edgedSquares[1].clusterId = this.edgedSquares[0].clusterId;
-    } else if (this.edgedSquares[1].clusterId < this.edgedSquares[0].clusterId) {
-      this.edgedSquares[0].clusterId = this.edgedSquares[1].clusterId;
-    } else {
-      throw new Error('same clusterIds are passed');
-    }
-    this.isBroken = true;
-  };
 }
+
+Wall.prototype.isBreakable = function isBreakable() {
+
+  return (
+    this.edgedSquares[0] &&
+    this.edgedSquares[1] &&
+    this.edgedSquares[0].clusterId !== this.edgedSquares[1].clusterId &&
+    !this.isBroken
+  );
+};
+
+Wall.prototype.beBroken = function beBroken(squares) {
+
+  var fromClusterId = Math.max(
+    this.edgedSquares[0].clusterId,
+    this.edgedSquares[1].clusterId
+  );
+  var toClusterId = Math.min(
+    this.edgedSquares[0].clusterId,
+    this.edgedSquares[1].clusterId
+  );
+
+  squares.forEach(function(line) {
+    line.forEach(function(square) {
+      if (square.clusterId === fromClusterId) {
+        square.clusterId = toClusterId;
+      }
+    });
+  });
+
+  this.isBroken = true;
+};
+
+
+function Maze(squares, walls) {
+  this.squares = squares;
+  this.walls = walls;
+}
+
+/**
+ * @return {string} e.g.
+ *
+ *   +-+-+-+-+\n
+ *   | |   | |\n
+ *   + + + + +\n
+ *   |   |   |\n
+ *   + + + +-+\n
+ *   | | |   |\n
+ *   +-+ +-+ +\n
+ *   |   |   |\n
+ *   +-+-+-+-+\n
+ */
+Maze.prototype.toString = function toString() {
+  var height = this.squares.length * 2 + 1;
+  var width = this.squares[0].length * 2 + 1;
+  var dots = _.range(height).map(function(rowIndex) {
+    return _.range(width).map(function(columnIndex) {
+      return (!(rowIndex % 2) && !(columnIndex % 2)) ? '+' : ' ';
+    });
+  });
+  this.walls.forEach(function(wall) {
+    if (wall.direction === 'vertical') {
+      dots[wall.rowIndex * 2 + 1][wall.columnIndex * 2] = (wall.isBroken ? ' ' : '|');
+    } else if (wall.direction === 'horizontal') {
+      dots[wall.rowIndex * 2][wall.columnIndex * 2 + 1] = (wall.isBroken ? ' ' : '-');
+    }
+  });
+  return dots.map(function(line) {
+    return line.join('') + '\n';
+  }).join('');
+};
+
 
 function getSquare(squares, rowIndex, columnIndex) {
   var line = squares[rowIndex];
@@ -107,47 +160,12 @@ module.exports = function generateMazeByClustering(size) {
 
   _.shuffle(walls).forEach(function(wall) {
     if (!wall.isBreakable()) return;
-    wall.beBroken();
+    wall.beBroken(squares);
   });
 
-  var maze = {
-    /**
-     * @return {string} e.g.
-     *
-     *   +-+-+-+-+\n
-     *   | |   | |\n
-     *   + + + + +\n
-     *   |   |   |\n
-     *   + + + +-+\n
-     *   | | |   |\n
-     *   +-+ +-+ +\n
-     *   |   |   |\n
-     *   +-+-+-+-+
-     */
-    toString: function toString() {
-      var height = squares.length * 2 + 1;
-      var width = squares[0].length * 2 + 1;
-      var dots = _.range(height).map(function(rowIndex) {
-        return _.range(width).map(function(columnIndex) {
-          return (!(rowIndex % 2) && !(columnIndex % 2)) ? '+' : '#';
-        });
-      });
-      walls.forEach(function(wall) {
-        if (wall.direction === 'vertical') {
-          dots[wall.rowIndex * 2 + 1][wall.columnIndex * 2] = (wall.isBroken ? '#' : '|');
-        } else if (wall.direction === 'horizontal') {
-          dots[wall.rowIndex * 2][wall.columnIndex * 2 + 1] = (wall.isBroken ? '#' : '-');
-        }
-      });
-      return dots.map(function(line) {
-        return line.join('') + '\n';
-      }).join('');
-    }
-  };
-
   return {
-    maze: maze,
-    rawSquares: squares,
-    rawWalls: walls
+    maze: new Maze(squares, walls),
+    squares: squares,
+    walls: walls
   };
 };

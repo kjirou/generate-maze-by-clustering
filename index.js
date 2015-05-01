@@ -38,11 +38,12 @@ module.exports = function generateMazeByClustering(size) {
   //
   var cells = _.range(cellHeight).map(function(cellRowIndex) {
     return _.range(cellWidth).map(function(cellColumnIndex) {
+      var square, wall;
       // square
       if (
         cellRowIndex % 2 === 1 && cellColumnIndex % 2 === 1
       ) {
-        var square = new Square(++squareSerialNumber);
+        square = new Square(++squareSerialNumber);
         squares.push(square);
         return square;
       // unbreakable wall
@@ -53,7 +54,7 @@ module.exports = function generateMazeByClustering(size) {
         cellColumnIndex === cellWidth - 1 ||
         cellRowIndex % 2 === 0 && cellColumnIndex % 2 === 0
       ) {
-        var wall = new Wall([cellRowIndex, cellColumnIndex], false);
+        wall = new Wall([cellRowIndex, cellColumnIndex], false);
         walls.push(wall);
         return wall;
       // breakable wall
@@ -61,7 +62,7 @@ module.exports = function generateMazeByClustering(size) {
         cellRowIndex % 2 === 0 && cellColumnIndex % 2 === 1 ||
         cellRowIndex % 2 === 1 && cellColumnIndex % 2 === 0
       ) {
-        var wall = new Wall([cellRowIndex, cellColumnIndex], true);
+        wall = new Wall([cellRowIndex, cellColumnIndex], true);
         walls.push(wall);
         return wall;
       } else {
@@ -116,24 +117,6 @@ module.exports = function generateMazeByClustering(size) {
     squares: squares,
     walls: walls,
     cells: cells,
-
-    formatCell: function formatCell(cell) {
-      if (
-        cell instanceof Square
-      ) {
-        return cell.clusterId + '';
-      } else if (
-        cell instanceof Wall && cell.isBroken
-      ) {
-        return ';';
-      } else if (
-        cell instanceof Wall && !cell.isBroken
-      ) {
-        return '#';
-      } else {
-        throw new Error('Invalid cell');
-      }
-    },
 
     cellFormatters: {
       simple: function simple(cell) {

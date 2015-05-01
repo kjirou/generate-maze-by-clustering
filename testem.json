@@ -1,4 +1,3 @@
 {
-  "test_page": "public/tests.html",
-  "timeout": 10000
+  "test_page": "public/tests.html"
 }

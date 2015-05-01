@@ -101,8 +101,8 @@ describe('generate-maze-by-clustering', function() {
       });
     });
 
-    it('100 times to 20x20', function() {
-      _.range(100).forEach(function(i) {
+    it('10 times to 20x20', function() {
+      _.range(10).forEach(function(i) {
         var maze = generateMaze([20, 20]);
 
         maze.squares.forEach(function(square) {

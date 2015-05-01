@@ -1,171 +1,181 @@
 var _ = require('lodash');
 
 
-function Square(serialNumber) {
-
-  this.serialNumber = serialNumber;
-
-  this.clusterId = serialNumber;
-}
-
-
-function Wall(direction, rowIndex, columnIndex) {
-
-  /** "horizontal" or "vertical" */
-  this.direction = direction;
-
-  this.rowIndex = rowIndex;
-  this.columnIndex = columnIndex;
-
-  /**
-   * @var {Array<Square|null>}
-   */
-  this.edgedSquares = [null, null];
-
-  this.isBroken = false;
-}
-
-Wall.prototype.isBreakable = function isBreakable() {
-
-  return (
-    this.edgedSquares[0] &&
-    this.edgedSquares[1] &&
-    this.edgedSquares[0].clusterId !== this.edgedSquares[1].clusterId &&
-    !this.isBroken
-  );
-};
-
-Wall.prototype.beBroken = function beBroken(squares) {
-
-  var fromClusterId = Math.max(
-    this.edgedSquares[0].clusterId,
-    this.edgedSquares[1].clusterId
-  );
-  var toClusterId = Math.min(
-    this.edgedSquares[0].clusterId,
-    this.edgedSquares[1].clusterId
-  );
-
-  squares.forEach(function(line) {
-    line.forEach(function(square) {
-      if (square.clusterId === fromClusterId) {
-        square.clusterId = toClusterId;
-      }
-    });
-  });
-
-  this.isBroken = true;
-};
-
-
-function Maze(squares, walls) {
-  this.squares = squares;
-  this.walls = walls;
-}
-
-/**
- * @return {string} e.g.
- *
- *   +-+-+-+-+\n
- *   | |   | |\n
- *   + + + + +\n
- *   |   |   |\n
- *   + + + +-+\n
- *   | | |   |\n
- *   +-+ +-+ +\n
- *   |   |   |\n
- *   +-+-+-+-+\n
- */
-Maze.prototype.toString = function toString() {
-  var height = this.squares.length * 2 + 1;
-  var width = this.squares[0].length * 2 + 1;
-  var dots = _.range(height).map(function(rowIndex) {
-    return _.range(width).map(function(columnIndex) {
-      return (!(rowIndex % 2) && !(columnIndex % 2)) ? '+' : ' ';
-    });
-  });
-  this.walls.forEach(function(wall) {
-    if (wall.direction === 'vertical') {
-      dots[wall.rowIndex * 2 + 1][wall.columnIndex * 2] = (wall.isBroken ? ' ' : '|');
-    } else if (wall.direction === 'horizontal') {
-      dots[wall.rowIndex * 2][wall.columnIndex * 2 + 1] = (wall.isBroken ? ' ' : '-');
-    }
-  });
-  return dots.map(function(line) {
-    return line.join('') + '\n';
-  }).join('');
-};
-
-
-function getSquare(squares, rowIndex, columnIndex) {
-  var line = squares[rowIndex];
-  if (!line) return null;
-  var square = line[columnIndex];
-  if (!square) return null;
-  return square;
-}
-
-
 /**
  * @param {Array<number>} [width, height]
  */
 module.exports = function generateMazeByClustering(size) {
 
-  var width = size[0];
-  var height = size[1];
+  var cellWidth = size[0] * 2 + 1;
+  var cellHeight = size[1] * 2 + 1;
 
-  // put squares
-  var serialNumber = -1;
-  var squares = _.range(height).map(function() {
-    return _.range(width).map(function() {
-      return new Square(++serialNumber);
-    });
-  });
-
-  // put walls
-  //
-  // e.g.
-  //
-  //   [width, height] = [3, 2]
-  //
-  //   +--8-+-11-+-14-+
-  //   |    |    |    |
-  //   0    1    2    3
-  //   |    |    |    |
-  //   +--9-+-12-+-15-+
-  //   |    |    |    |
-  //   4    5    6    7
-  //   |    |    |    |
-  //   +-10-+-13-+-16-+
-  //
-  // However, the order is irrelevant (with the exception of debugging).
-  //
-  var walls = [];
-  _.range(squares.length).map(function(rowIndex) {
-    _.range(squares[0].length + 1).map(function(columnIndex) {
-      var wall = new Wall('vertical', rowIndex, columnIndex);
-      wall.edgedSquares[0] = getSquare(squares, rowIndex, columnIndex - 1);
-      wall.edgedSquares[1] = getSquare(squares, rowIndex, columnIndex);
-      walls.push(wall);
-    });
-  });
-  _.range(squares[0].length).map(function(columnIndex) {
-    _.range(squares.length + 1).map(function(rowIndex) {
-      var wall = new Wall('horizontal', rowIndex, columnIndex);
-      wall.edgedSquares[0] = getSquare(squares, rowIndex - 1, columnIndex);
-      wall.edgedSquares[1] = getSquare(squares, rowIndex, columnIndex);
-      walls.push(wall);
-    });
-  });
-
-  _.shuffle(walls).forEach(function(wall) {
-    if (!wall.isBreakable()) return;
-    wall.beBroken(squares);
-  });
-
-  return {
-    maze: new Maze(squares, walls),
-    squares: squares,
-    walls: walls
+  var Square = function Square(serialNumber) {
+    this.serialNumber = serialNumber;
+    this.clusterId = serialNumber;
   };
+  var Wall = function Wall(position, isBreakable) {
+    this.position = position;
+    this.isBreakable = isBreakable;
+    this.isBroken = false;
+  };
+
+  // generate squares
+  var squareSerialNumber = -1;
+  var squares = [];
+  var walls = [];
+  //
+  // Create cells like this:
+  //
+  // #######
+  // # * * #
+  // #*#*#*#
+  // # * * #
+  // #######
+  //
+  // (space) = square
+  // #       = unbreakable wall
+  // *       = breakable wall
+  //
+  var cells = _.range(cellHeight).map(function(cellRowIndex) {
+    return _.range(cellWidth).map(function(cellColumnIndex) {
+      // square
+      if (
+        cellRowIndex % 2 === 1 && cellColumnIndex % 2 === 1
+      ) {
+        var square = new Square(++squareSerialNumber);
+        squares.push(square);
+        return square;
+      // unbreakable wall
+      } else if (
+        cellRowIndex === 0 ||
+        cellRowIndex === cellHeight - 1 ||
+        cellColumnIndex === 0 ||
+        cellColumnIndex === cellWidth - 1 ||
+        cellRowIndex % 2 === 0 && cellColumnIndex % 2 === 0
+      ) {
+        var wall = new Wall([cellRowIndex, cellColumnIndex], false);
+        walls.push(wall);
+        return wall;
+      // breakable wall
+      } else if (
+        cellRowIndex % 2 === 0 && cellColumnIndex % 2 === 1 ||
+        cellRowIndex % 2 === 1 && cellColumnIndex % 2 === 0
+      ) {
+        var wall = new Wall([cellRowIndex, cellColumnIndex], true);
+        walls.push(wall);
+        return wall;
+      } else {
+        throw new Error('[' + cellRowIndex + ', ' + cellColumnIndex + '] is unexpected cell');
+      }
+    });
+  });
+
+  _.shuffle(walls)
+    .filter(function(wall) {
+      return wall.isBreakable;
+    })
+    .forEach(function(wall) {
+      var aroundSquares = [];
+      [
+        [-1, 0],
+        [0, 1],
+        [1, 0],
+        [0, -1]
+      ].forEach(function(posDelta) {
+        var cellRowIndex = wall.position[0] + posDelta[0];
+        var cellColumnIndex = wall.position[1] + posDelta[1];
+        var cell = cells[cellRowIndex][cellColumnIndex];
+        if (cell instanceof Square) {
+          aroundSquares.push(cell);
+        }
+      });
+
+      if (aroundSquares.length !== 2) {
+        throw new Error('Unexpected situation');
+      }
+
+      if (aroundSquares[0].clusterId === aroundSquares[1].clusterId) {
+        return;
+      }
+
+      var fromClusterId = Math.max(aroundSquares[0].clusterId, aroundSquares[1].clusterId);
+      var toClusterId = Math.min(aroundSquares[0].clusterId, aroundSquares[1].clusterId);
+      squares.forEach(function(square) {
+        if (square.clusterId === fromClusterId) {
+          square.clusterId = toClusterId;
+        }
+      });
+      wall.isBroken = true;
+    })
+  ;
+
+  var maze = {
+    Square: Square,
+    Wall: Wall,
+
+    squares: squares,
+    walls: walls,
+    cells: cells,
+
+    formatCell: function formatCell(cell) {
+      if (
+        cell instanceof Square
+      ) {
+        return cell.clusterId + '';
+      } else if (
+        cell instanceof Wall && cell.isBroken
+      ) {
+        return ';';
+      } else if (
+        cell instanceof Wall && !cell.isBroken
+      ) {
+        return '#';
+      } else {
+        throw new Error('Invalid cell');
+      }
+    },
+
+    cellFormatters: {
+      simple: function simple(cell) {
+        if (
+          cell instanceof Square ||
+          cell instanceof Wall && cell.isBroken
+        ) {
+          return ' ';
+        }
+        return '#';
+      },
+      debug: function debug(cell) {
+        if (
+          cell instanceof Square
+        ) {
+          return cell.clusterId + '';
+        } else if (
+          cell instanceof Wall && cell.isBroken
+        ) {
+          return ';';
+        } else if (
+          cell instanceof Wall && !cell.isBroken
+        ) {
+          return '#';
+        }
+        throw new Error('Invalid cell');
+      }
+    },
+
+    toText: function toText(options) {
+      options = _.assign({}, {
+        formatter: 'simple'
+      }, options);
+
+      var text = cells.map(function(cellLine) {
+        return cellLine.map(function(cell) {
+          return maze.cellFormatters[options.formatter](cell);
+        }).join('');
+      }).join('\n');
+      return text;
+    }
+  };
+
+  return maze;
 };

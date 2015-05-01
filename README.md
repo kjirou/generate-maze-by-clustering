@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/generate-maze-by-clustering.svg)](http://badge.fury.io/js/generate-maze-by-clustering)
 [![Build Status](https://travis-ci.org/kjirou/generate-maze-by-clustering.svg?branch=master)](https://travis-ci.org/kjirou/generate-maze-by-clustering)
 
-Generate a maze by clustering algorithm
+Generate a maze by "Clustering Method" algorithm
 
 
 ## Usage
@@ -76,6 +76,6 @@ I referred the following site:
 
 http://apollon.issp.u-tokyo.ac.jp/~watanabe/tips/maze.html
 
-The algorithm is named by "Clustering Method"(クラスタリング法) in this site (and many japanise sites).
+The algorithm is named by "Clustering Method" (クラスタリング法) in this site, and many japanise sites too.
 
 However, I don't know whether that's the right name.

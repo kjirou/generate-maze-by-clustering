@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/kjirou/generate-maze-by-clustering#readme",
   "keywords": [
-    "maze"
+    "maze",
+    "tool"
   ],
   "license": "MIT",
   "main": "index.js",

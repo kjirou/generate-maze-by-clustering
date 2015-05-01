@@ -3,6 +3,9 @@
   "description": "Generate a maze by clustering algorithm",
   "version": "0.0.0",
   "author": "kjirou",
+  "bin": {
+    "generate-maze-by-clustering": "./bin/generate-maze-by-clustering"
+  },
   "bugs": {
     "url": "https://github.com/kjirou/generate-maze-by-clustering/issues"
   },

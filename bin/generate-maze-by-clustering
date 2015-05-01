@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+var generateMaze = require('../index');
+
+var args = process.argv.slice(2);
+var width = Number(args[0]);
+var height = Number(args[1]);
+
+if (
+  isNaN(width) ||
+  width <= 0 ||
+  isNaN(height) ||
+  height <= 0
+) {
+  throw new Error('Invalid args');
+}
+
+console.log(generateMaze([width, height]).toText());

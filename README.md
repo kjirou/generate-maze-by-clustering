@@ -10,16 +10,28 @@ Generate a maze by clustering algorithm
 ### In Command Line
 ```bash
 npm install -g generate-maze-by-clustering
-generate-maze-by-clustering 5 4
-###########
-#   #   # #
-# ### ### #
-#         #
-######### #
-# # # #   #
-# # # # ###
-#         #
-###########
+generate-maze-by-clustering 20 10
+#########################################
+#       #   # # #   #     # # #   #     #
+##### ### # # # # ### ##### # ### ### ###
+#   # #   # #   #   #     #         #   #
+# # # # # ##### ### # ### # # ##### ### #
+# #     #   # #   #     #   #     #     #
+# ####### ### # ### ### # ### # ### ### #
+#   #     # #     # # # # #   #   # #   #
+# # # ### # # ##### # ##### ######### # #
+# # # # #   #     #   #   # #   #   # # #
+##### # # ##### ### ### # # # ### ### ###
+#     #     #         # # #   # #       #
+### ### ####### ######### # ### ##### ###
+#     #   #   #   #     #     #     # # #
+# ### # ### ### # # ############### ### #
+# #   #     # # #       # # #   #   #   #
+# ### ##### # # ##### # # # # ### ##### #
+#   #   #   #   #     #                 #
+# ######### # ##### # # ### # ### ### ###
+#       #     #     # #   # # #   #     #
+#########################################
 ```
 
 ### In JavaScript
@@ -31,7 +43,7 @@ Or, you can use in browser through the [browserify](https://github.com/substack/
 ```
 var generateMaze = require('generate-maze-by-clustering');
 
-var maze = generateMaze([5, 4]);
+var maze = generateMaze([20, 10]);
 
 console.log(maze.toText());
 ```

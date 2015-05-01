@@ -1,7 +1,7 @@
 {
   "name": "generate-maze-by-clustering",
   "description": "Generate a maze by \"Clustering Method\" algorithm",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "kjirou",
   "bin": {
     "generate-maze-by-clustering": "./bin/generate-maze-by-clustering"

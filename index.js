@@ -11,7 +11,7 @@ var Wall = function Wall(position, isBreakable) {
   this.isBreakable = isBreakable;
   this.isBroken = false;
 };
-Wall.prototype.beBrokenIfBreakable = function beBroken(edgedSquares, allSquares) {
+Wall.prototype.beBrokenIfBreakable = function beBrokenIfBreakable(edgedSquares, allSquares) {
 
   if (edgedSquares.length !== 2) {
     throw new Error('Unexpected situation');
@@ -171,7 +171,7 @@ module.exports = function generateMazeByClustering(squareSize) {
       }
       var edgedSquares = pickAroundSquares(cells, wall.position);
       if (edgedSquares.length !== 2) {
-        return false;
+        return;
       }
 
       // Apply breaking

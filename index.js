@@ -1,6 +1,18 @@
 var _ = require('lodash');
 
 
+var Square = function Square(serialNumber) {
+  this.serialNumber = serialNumber;
+  this.clusterId = serialNumber;
+};
+
+var Wall = function Wall(position, isBreakable) {
+  this.position = position;
+  this.isBreakable = isBreakable;
+  this.isBroken = false;
+};
+
+
 /**
  * @param {Array<number>} [width, height]
  */
@@ -8,16 +20,6 @@ module.exports = function generateMazeByClustering(size) {
 
   var cellWidth = size[0] * 2 + 1;
   var cellHeight = size[1] * 2 + 1;
-
-  var Square = function Square(serialNumber) {
-    this.serialNumber = serialNumber;
-    this.clusterId = serialNumber;
-  };
-  var Wall = function Wall(position, isBreakable) {
-    this.position = position;
-    this.isBreakable = isBreakable;
-    this.isBroken = false;
-  };
 
   // generate squares
   var squareSerialNumber = -1;
@@ -71,6 +73,7 @@ module.exports = function generateMazeByClustering(size) {
     });
   });
 
+  // Crush breakable walls randomly
   _.shuffle(walls)
     .filter(function(wall) {
       return wall.isBreakable;

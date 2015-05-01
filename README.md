@@ -34,6 +34,28 @@ generate-maze-by-clustering 20 10
 #########################################
 ```
 
+Usage:
+```
+generate-maze-by-clustering {square_width} {square_height}
+
+  square_width, square_height:
+
+    They do not mean byte length.
+    If you set "3 2" then you will get the following size:
+
+      #######
+      # # # #
+      #######
+      # # # #
+      #######
+
+    In the "1 1" case:
+
+      ###
+      # #
+      ###
+```
+
 ### In JavaScript
 ```bash
 npm install --save generate-maze-by-clustering
